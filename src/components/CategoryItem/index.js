@@ -7,7 +7,7 @@ export default CategoryItem = ({ data, favorite }) => {
   function handleNavigate() {
     navigation.navigate('Category', {
       id: data.id,
-      name: data?.attributes?.name,
+      title: data?.attributes?.name,
     });
   }
 

@@ -1,25 +1,29 @@
+import { Feather } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
 import {
-  View,
-  SafeAreaView,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   FlatList,
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Feather } from '@expo/vector-icons';
-import api from '../../services/api';
+import * as Animatable from 'react-native-animatable';
 import CategoryItem from '../../components/CategoryItem';
-import { getFavorite, setFavorite } from '../../services/favorite';
 import FavoritePost from '../../components/FavoritePost';
 import PostItem from '../../components/PostItem';
+import api from '../../services/api';
+import { getFavorite, setFavorite } from '../../services/favorite';
+
+const FlatListAnimated = Animatable.createAnimatableComponent(FlatList);
 
 export default Home = () => {
   const navigation = useNavigation();
   const [categories, setCategories] = useState([]);
   const [favCategory, setFavCategory] = useState([]);
   const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   // https://www.youtube.com/watch?v=LNWxufBEkrA - 49:03
 
@@ -45,9 +49,11 @@ export default Home = () => {
   }, []);
 
   async function getListPosts() {
+    setLoading(true);
     const response = await api.get(
       'api/posts?populate=cover&sort=createdAt:desc'
     );
+    setLoading(false);
     setPosts(response.data.data);
   }
 
@@ -61,12 +67,16 @@ export default Home = () => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.name}>DevBlog</Text>
+        <Animatable.Text style={styles.name} animation="fadeInLeft">
+          DevBlog
+        </Animatable.Text>
         <TouchableOpacity onPress={() => navigation.navigate('Search')}>
           <Feather name="search" size={25} color="#fff" />
         </TouchableOpacity>
       </View>
-      <FlatList
+      <FlatListAnimated
+        animation="flipInX"
+        delay={500}
         style={styles.categories}
         data={categories}
         keyExtractor={(item) => String(item.id)}
@@ -105,6 +115,8 @@ export default Home = () => {
           data={posts}
           keyExtractor={(item) => String(item.id)}
           renderItem={({ item }) => <PostItem data={item} />}
+          onRefresh={() => getListPosts()}
+          refreshing={loading}
         />
       </View>
     </SafeAreaView>
